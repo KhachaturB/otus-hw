@@ -34,6 +34,18 @@ public class CustomerService {
 
     private final TreeMap<Customer, String> map = new TreeMap<>(this::compareCustomers);
 
+    public Map.Entry<Customer, String> getSmallest() {
+        return copyEntry(map.firstEntry());
+    }
+
+    public Map.Entry<Customer, String> getNext(Customer customer) {
+        return copyEntry(map.higherEntry(customer));
+    }
+
+    public void add(Customer customer, String data) {
+        map.put(customer, data);
+    }
+
     private int compareCustomers(Customer customer1, Customer customer2) {
         return Long.compare(customer1.getScores(), customer2.getScores());
     }
@@ -46,17 +58,5 @@ public class CustomerService {
         var key = entry.getKey();
         var value = entry.getValue();
         return new Entry<>(new Customer(key.getId(), key.getName(), key.getScores()), value);
-    }
-
-    public Map.Entry<Customer, String> getSmallest() {
-        return copyEntry(map.firstEntry());
-    }
-
-    public Map.Entry<Customer, String> getNext(Customer customer) {
-        return copyEntry(map.higherEntry(customer));
-    }
-
-    public void add(Customer customer, String data) {
-        map.put(customer, data);
     }
 }
