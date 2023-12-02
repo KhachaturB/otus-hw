@@ -11,13 +11,13 @@ import ru.otus.hw06.framework.annotations.After;
 import ru.otus.hw06.framework.annotations.Before;
 import ru.otus.hw06.framework.annotations.Test;
 
-@SuppressWarnings({"java:S106", "java:S112", "java:S2259", "java:S2479", "java:S3740"})
+@SuppressWarnings({"java:S106", "java:S112"})
 public class TestsRunner {
 
     record TestResult(int successfulTests, int failedTests) {}
 
     public static void runTests(String className) {
-        Class testClass;
+        Class<?> testClass;
         try {
             testClass = Class.forName(className);
         } catch (ClassNotFoundException e) {
@@ -35,7 +35,7 @@ public class TestsRunner {
                 result.successfulTests, result.failedTests);
     }
 
-    private static void checkClass(Class testClass) {
+    private static void checkClass(Class<?> testClass) {
         var testMethods = getMethods(testClass, Test.class);
         if (testMethods.isEmpty()) {
             throw new RuntimeException("У класса нет тестовых методов");
@@ -48,11 +48,11 @@ public class TestsRunner {
         }
     }
 
-    private static TestResult runTests(Class testClass) {
+    private static TestResult runTests(Class<?> testClass) {
         var beforeMethods = getMethods(testClass, Before.class);
         var testMethods = getMethods(testClass, Test.class);
         var afterMethods = getMethods(testClass, After.class);
-        Constructor constructor = null;
+        Constructor<?> constructor = null;
         try {
             constructor = testClass.getConstructor();
         } catch (NoSuchMethodException ignore) {
@@ -64,6 +64,7 @@ public class TestsRunner {
         for (var test : testMethods) {
             Object instance;
             try {
+                assert constructor != null;
                 instance = constructor.newInstance();
             } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
                 throw new RuntimeException(e);
@@ -82,7 +83,7 @@ public class TestsRunner {
         return new TestResult(successfulTests, failedTests);
     }
 
-    private static List<Method> getMethods(Class testClass, Class annotationClass) {
+    private static List<Method> getMethods(Class<?> testClass, Class<?> annotationClass) {
         var methods = new ArrayList<Method>();
         for (var method : testClass.getMethods()) {
             for (var annotation : method.getAnnotations()) {
