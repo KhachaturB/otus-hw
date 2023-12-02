@@ -4,7 +4,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import ru.otus.hw06.framework.annotations.After;
@@ -84,16 +83,10 @@ public class TestsRunner {
     }
 
     private static List<Method> getMethods(Class<?> testClass, Class<?> annotationClass) {
-        var methods = new ArrayList<Method>();
-        for (var method : testClass.getMethods()) {
-            for (var annotation : method.getAnnotations()) {
-                if (annotation.annotationType().equals(annotationClass)) {
-                    methods.add(method);
-                    break;
-                }
-            }
-        }
-        return methods;
+        return Arrays.stream(testClass.getMethods())
+                .filter(method -> Arrays.stream(method.getAnnotations())
+                        .anyMatch(annotation -> annotation.annotationType().equals(annotationClass)))
+                .toList();
     }
 
     private static void runMethods(List<Method> methods, Object instance) {
