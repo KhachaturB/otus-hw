@@ -12,7 +12,7 @@ plugins {
 
 idea {
     project {
-        languageLevel = IdeaLanguageLevel(21)
+        languageLevel = IdeaLanguageLevel(20)
     }
     module {
         isDownloadJavadoc = true
@@ -49,8 +49,8 @@ allprojects {
 subprojects {
     plugins.apply(JavaPlugin::class.java)
     extensions.configure<JavaPluginExtension> {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
+        sourceCompatibility = JavaVersion.VERSION_20
+        targetCompatibility = JavaVersion.VERSION_20
     }
 
     tasks.withType<JavaCompile> {
