@@ -1,5 +1,6 @@
 package ru.otus.hw06.framework;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -15,6 +16,8 @@ public class TestsRunner {
 
     record TestResult(int successfulTests, int failedTests) {}
 
+    record TestMethods(Constructor<?> constructor, List<Method> before, List<Method> tests, List<Method> after) {}
+
     public static void runTests(String className) {
         Class<?> testClass;
         try {
@@ -24,14 +27,15 @@ public class TestsRunner {
         }
         checkClass(testClass);
 
-        var result = runTests(testClass);
+        var testMethods = findTestMethods(testClass);
+        var testResults = runTests(testMethods);
         System.out.printf(
                 """
-                           Выполнение тестов завершено:
-                        \tуспешных тестов: %d
-                        \tпроваленных тестов: %d
-                """,
-                result.successfulTests, result.failedTests);
+                                   Выполнение тестов завершено:
+                                \tуспешных тестов: %d
+                                \tпроваленных тестов: %d
+                        """,
+                testResults.successfulTests, testResults.failedTests);
     }
 
     private static void checkClass(Class<?> testClass) {
@@ -47,45 +51,48 @@ public class TestsRunner {
         }
     }
 
-    private static TestResult runTests(Class<?> testClass) {
+    private static TestMethods findTestMethods(Class<?> testClass) {
         var beforeMethods = getMethods(testClass, Before.class);
         var testMethods = getMethods(testClass, Test.class);
         var afterMethods = getMethods(testClass, After.class);
-        Constructor<?> constructor = null;
+
+        Constructor<?> constructor;
         try {
             constructor = testClass.getConstructor();
-        } catch (NoSuchMethodException ignore) {
-            // проверили, что контсруктор есть в методе checkClass
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
         }
 
+        return new TestMethods(constructor, beforeMethods, testMethods, afterMethods);
+    }
+
+    private static TestResult runTests(TestMethods methods) {
         var successfulTests = 0;
         var failedTests = 0;
-        for (var test : testMethods) {
+        for (var test : methods.tests) {
             Object instance;
             try {
-                assert constructor != null;
-                instance = constructor.newInstance();
+                instance = methods.constructor.newInstance();
             } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
                 throw new RuntimeException(e);
             }
 
-            runMethods(beforeMethods, instance);
+            runMethods(methods.before, instance);
             try {
                 test.invoke(instance);
                 successfulTests++;
             } catch (Exception ignore) {
                 failedTests++;
             }
-            runMethods(afterMethods, instance);
+            runMethods(methods.after, instance);
         }
 
         return new TestResult(successfulTests, failedTests);
     }
 
-    private static List<Method> getMethods(Class<?> testClass, Class<?> annotationClass) {
+    private static List<Method> getMethods(Class<?> testClass, Class<? extends Annotation> annotationClass) {
         return Arrays.stream(testClass.getMethods())
-                .filter(method -> Arrays.stream(method.getAnnotations())
-                        .anyMatch(annotation -> annotation.annotationType().equals(annotationClass)))
+                .filter(method -> method.isAnnotationPresent(annotationClass))
                 .toList();
     }
 
