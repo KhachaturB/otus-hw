@@ -20,173 +20,122 @@
 |    1536    |    4056    |
 |    2048    |    3993    |
 
-```vega
-{
+```html
+<head>
+  <script src="https://cdn.jsdelivr.net/npm/vega@5.26.1"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-lite@5.16.3"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-embed@6.23.0"></script>
+</head>
+<body>
+  <div id="vis"/>
+  <script>
+    const spec = {
   "$schema": "https://vega.github.io/schema/vega/v5.json",
-  "description": "An interactive line chart of stock prices, with returns shown relative to a selected date.",
-  "width": 650,
-  "height": 300,
+  "description": "A basic line chart example.",
+  "width": 500,
+  "height": 200,
   "padding": 5,
-  "autosize": {"type": "fit", "contains": "padding"},
-
   "signals": [
     {
-      "name": "indexDate",
-      "update": "time('Jan 1 2005')",
-      "on": [
-        {
-          "events": "pointermove",
-          "update": "invert('x', clamp(x(), 0, width))"
-        }
-      ]
-    },
-    {
-      "name": "maxDate",
-      "update": "time('Mar 1 2010')"
+      "name": "interpolate",
+      "value": "linear",
+      "bind": {
+        "input": "select",
+        "options": [
+          "basis",
+          "cardinal",
+          "catmull-rom",
+          "linear",
+          "monotone",
+          "natural",
+          "step",
+          "step-after",
+          "step-before"
+        ]
+      }
     }
   ],
-
   "data": [
     {
-      "name": "stocks",
-      "url": "data/stocks.csv",
-      "format": {"type": "csv", "parse": {"price":"number", "date":"date"}}
-    },
-    {
-      "name": "index",
-      "source": "stocks",
-      "transform": [
-        {
-          "type": "filter",
-          "expr": "month(datum.date) == month(indexDate) && year(datum.date) == year(indexDate)"
-        }
-      ]
-    },
-    {
-      "name": "indexed_stocks",
-      "source": "stocks",
-      "transform": [
-        {
-          "type": "lookup", "from": "index", "key": "symbol",
-          "fields": ["symbol"], "as": ["index"], "default": {"price": 0}
-        },
-        {
-          "type": "formula",
-          "as": "indexed_price",
-          "expr": "datum.index.price > 0 ? (datum.price - datum.index.price)/datum.index.price : 0"
-        }
+      "name": "table",
+      "values": [
+        {"x": 0, "y": 28, "c": 0},
+        {"x": 0, "y": 20, "c": 1},
+        {"x": 1, "y": 43, "c": 0},
+        {"x": 1, "y": 35, "c": 1},
+        {"x": 2, "y": 81, "c": 0},
+        {"x": 2, "y": 10, "c": 1},
+        {"x": 3, "y": 19, "c": 0},
+        {"x": 3, "y": 15, "c": 1},
+        {"x": 4, "y": 52, "c": 0},
+        {"x": 4, "y": 48, "c": 1},
+        {"x": 5, "y": 24, "c": 0},
+        {"x": 5, "y": 28, "c": 1},
+        {"x": 6, "y": 87, "c": 0},
+        {"x": 6, "y": 66, "c": 1},
+        {"x": 7, "y": 17, "c": 0},
+        {"x": 7, "y": 27, "c": 1},
+        {"x": 8, "y": 68, "c": 0},
+        {"x": 8, "y": 16, "c": 1},
+        {"x": 9, "y": 49, "c": 0},
+        {"x": 9, "y": 25, "c": 1}
       ]
     }
   ],
-
   "scales": [
     {
       "name": "x",
-      "type": "time",
-      "domain": {"data": "stocks", "field": "date"},
-      "range": "width"
+      "type": "point",
+      "range": "width",
+      "domain": {"data": "table", "field": "x"}
     },
     {
       "name": "y",
       "type": "linear",
-      "domain": {"data": "indexed_stocks", "field": "indexed_price"},
-      "nice": true, "zero": true,
-      "range": "height"
+      "range": "height",
+      "nice": true,
+      "zero": true,
+      "domain": {"data": "table", "field": "y"}
     },
     {
       "name": "color",
       "type": "ordinal",
       "range": "category",
-      "domain": {"data": "stocks", "field": "symbol"}
+      "domain": {"data": "table", "field": "c"}
     }
   ],
-
   "axes": [
-    {"orient": "left", "scale": "y", "grid": true, "format": "%"}
+    {"orient": "bottom", "scale": "x"},
+    {"orient": "left", "scale": "y"}
   ],
-
   "marks": [
     {
       "type": "group",
-      "from": {
-        "facet": {
-          "name": "series",
-          "data": "indexed_stocks",
-          "groupby": "symbol"
-        }
-      },
-      "data": [
-        {
-          "name": "label",
-          "source": "series",
-          "transform": [
-            { "type": "filter", "expr": "datum.date == maxDate" }
-          ]
-        }
-      ],
+      "from": {"facet": {"name": "series", "data": "table", "groupby": "c"}},
       "marks": [
         {
           "type": "line",
           "from": {"data": "series"},
           "encode": {
-            "update": {
-              "x": {"scale": "x", "field": "date"},
-              "y": {"scale": "y", "field": "indexed_price"},
-              "stroke": {"scale": "color", "field": "symbol"},
+            "enter": {
+              "x": {"scale": "x", "field": "x"},
+              "y": {"scale": "y", "field": "y"},
+              "stroke": {"scale": "color", "field": "c"},
               "strokeWidth": {"value": 2}
-            }
-          }
-        },
-        {
-          "type": "text",
-          "from": {"data": "label"},
-          "encode": {
+            },
             "update": {
-              "x": {"scale": "x", "field": "date", "offset": 2},
-              "y": {"scale": "y", "field": "indexed_price"},
-              "fill": {"scale": "color", "field": "symbol"},
-              "text": {"field": "symbol"},
-              "baseline": {"value": "middle"}
-            }
+              "interpolate": {"signal": "interpolate"},
+              "strokeOpacity": {"value": 1}
+            },
+            "hover": {"strokeOpacity": {"value": 0.5}}
           }
         }
       ]
-    },
-    {
-      "type": "rule",
-      "encode": {
-        "update": {
-          "x": {"field": {"group": "x"}},
-          "x2": {"field": {"group": "width"}},
-          "y": {"value": 0.5, "offset": {"scale": "y", "value": 0, "round": true}},
-          "stroke": {"value": "black"},
-          "strokeWidth": {"value": 1}
-        }
-      }
-    },
-    {
-      "type": "rule",
-      "encode": {
-        "update": {
-          "x": {"scale": "x", "signal": "indexDate", "offset": 0.5},
-          "y": {"value": 0},
-          "y2": {"field": {"group": "height"}},
-          "stroke": {"value": "firebrick"}
-        }
-      }
-    },
-    {
-      "type": "text",
-      "encode": {
-        "update": {
-          "x": {"scale": "x", "signal": "indexDate"},
-          "y2": {"field": {"group": "height"}, "offset": 15},
-          "align": {"value": "center"},
-          "text": {"signal": "timeFormat(indexDate, '%b %Y')"},
-          "fill": {"value": "firebrick"}
-        }
-      }
     }
-  ]
-}
+  ],
+  "config": {}
+};
+    vegaEmbed("#vis", spec, {mode: "vega"}).then(console.log).catch(console.warn);
+  </script>
+</body>
 ```
