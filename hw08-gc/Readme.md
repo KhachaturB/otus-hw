@@ -1,141 +1,51 @@
-<h1>Результаты измерений</h1>
+# Результаты измерений
 
-Исходное приложение
 
-|  Heap, MB  |  Time, ms  |
-|:----------:|:----------:|
-|    256     |    8599    |
-|    352     |    6252    |
-|    400     |    6138    |
-|    424     |    5654    |
-|    430     |    5339    |
-|    436     |    5064    |
-|    442     |    5030    |
-|    448     |    4991    |
-|    544     |    4887    |
-|    640     |    4830    |
-|    832     |    4350    |
-|    928     |    4130    |
-|    1024    |    4075    |
-|    1536    |    4056    |
-|    2048    |    3993    |
+### Исходное приложение
+Оптимальный размер кучи **880 Мб**
 
-```html
-<head>
-  <script src="https://cdn.jsdelivr.net/npm/vega@5.26.1"></script>
-  <script src="https://cdn.jsdelivr.net/npm/vega-lite@5.16.3"></script>
-  <script src="https://cdn.jsdelivr.net/npm/vega-embed@6.23.0"></script>
-</head>
-<body>
-  <div id="vis"/>
-  <script>
-    const spec = {
-  "$schema": "https://vega.github.io/schema/vega/v5.json",
-  "description": "A basic line chart example.",
-  "width": 500,
-  "height": 200,
-  "padding": 5,
-  "signals": [
-    {
-      "name": "interpolate",
-      "value": "linear",
-      "bind": {
-        "input": "select",
-        "options": [
-          "basis",
-          "cardinal",
-          "catmull-rom",
-          "linear",
-          "monotone",
-          "natural",
-          "step",
-          "step-after",
-          "step-before"
-        ]
-      }
-    }
-  ],
-  "data": [
-    {
-      "name": "table",
-      "values": [
-        {"x": 0, "y": 28, "c": 0},
-        {"x": 0, "y": 20, "c": 1},
-        {"x": 1, "y": 43, "c": 0},
-        {"x": 1, "y": 35, "c": 1},
-        {"x": 2, "y": 81, "c": 0},
-        {"x": 2, "y": 10, "c": 1},
-        {"x": 3, "y": 19, "c": 0},
-        {"x": 3, "y": 15, "c": 1},
-        {"x": 4, "y": 52, "c": 0},
-        {"x": 4, "y": 48, "c": 1},
-        {"x": 5, "y": 24, "c": 0},
-        {"x": 5, "y": 28, "c": 1},
-        {"x": 6, "y": 87, "c": 0},
-        {"x": 6, "y": 66, "c": 1},
-        {"x": 7, "y": 17, "c": 0},
-        {"x": 7, "y": 27, "c": 1},
-        {"x": 8, "y": 68, "c": 0},
-        {"x": 8, "y": 16, "c": 1},
-        {"x": 9, "y": 49, "c": 0},
-        {"x": 9, "y": 25, "c": 1}
-      ]
-    }
-  ],
-  "scales": [
-    {
-      "name": "x",
-      "type": "point",
-      "range": "width",
-      "domain": {"data": "table", "field": "x"}
-    },
-    {
-      "name": "y",
-      "type": "linear",
-      "range": "height",
-      "nice": true,
-      "zero": true,
-      "domain": {"data": "table", "field": "y"}
-    },
-    {
-      "name": "color",
-      "type": "ordinal",
-      "range": "category",
-      "domain": {"data": "table", "field": "c"}
-    }
-  ],
-  "axes": [
-    {"orient": "bottom", "scale": "x"},
-    {"orient": "left", "scale": "y"}
-  ],
-  "marks": [
-    {
-      "type": "group",
-      "from": {"facet": {"name": "series", "data": "table", "groupby": "c"}},
-      "marks": [
-        {
-          "type": "line",
-          "from": {"data": "series"},
-          "encode": {
-            "enter": {
-              "x": {"scale": "x", "field": "x"},
-              "y": {"scale": "y", "field": "y"},
-              "stroke": {"scale": "color", "field": "c"},
-              "strokeWidth": {"value": 2}
-            },
-            "update": {
-              "interpolate": {"signal": "interpolate"},
-              "strokeOpacity": {"value": 1}
-            },
-            "hover": {"strokeOpacity": {"value": 0.5}}
-          }
-        }
-      ]
-    }
-  ],
-  "config": {}
-};
-    vegaEmbed("#vis", spec, {mode: "vega"}).then(console.log).catch(console.warn);
-  </script>
-</body>
-```
+Также можно рассмотреть возможность установить размер кучи равным **450 Мб**, т.к. после этого значения производительность
+прирастает незначительно
+
+| Heap, MB | Time, ms |
+|:--------:|:--------:|
+|   256    |   8599   |
+|   352    |   6252   |
+|   400    |   6138   |
+|   424    |   5654   |
+|   430    |   5339   |
+|   436    |   5064   |
+|   442    |   5030   |
+|   448    |   4991   |
+|   544    |   4887   |
+|   640    |   4830   |
+|   832    |   4350   |
+|   856    |   4280   |
+|   868    |  	4207   |
+|   880    |  	4158   |
+|   928    |   4130   |
+|   1024   |   4075   |
+|   1536   |   4056   |
+|   2048   |   3993   |
+
+### Оптимизированное приложение
+| Heap, MB | Time, ms |
+|:--------:|:--------:|
+|   256    |   422    |
+|   352    |   421    | 
+|   400    |   422    |
+|   424    |   421    |
+|   430    |   421    |
+|   436    |   421    |
+|   442    |   424    |
+|   448    |   421    |
+|   544    |   421    |
+|   640    |   421    |
+|   832    |   421    |
+|   856    |   421    |
+|   868    |   421    |
+|   880    |   421    |
+|   928    |   421    |
+|   1024   |   421    |
+|   1536   |   421    |
+|   2048   |   421    |
