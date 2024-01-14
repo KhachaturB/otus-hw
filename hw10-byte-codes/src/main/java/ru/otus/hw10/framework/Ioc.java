@@ -5,7 +5,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
@@ -27,20 +28,20 @@ public class Ioc {
     static class LoggingInvocationHandler<I> implements InvocationHandler {
 
         private final I instance;
-        private final List<String> methodsToLog;
+        private final Map<String, String> methodsToLog;
 
         LoggingInvocationHandler(I instance) {
             this.instance = instance;
             methodsToLog = Arrays.stream(instance.getClass().getMethods())
                     .filter(method -> method.isAnnotationPresent(Log.class))
                     .map(this::getMethodShortName)
-                    .toList();
+                    .collect(Collectors.toMap(Function.identity(), Function.identity()));
         }
 
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
             var methodShortName = getMethodShortName(method);
-            if (methodsToLog.stream().anyMatch(mt -> mt.equals(methodShortName))) {
+            if (methodsToLog.containsKey(methodShortName)) {
                 log.info(
                         "executed method: {}, params: {}",
                         method.getName(),

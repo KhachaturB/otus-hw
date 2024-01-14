@@ -4,7 +4,6 @@ plugins {
 
 dependencies {
     implementation ("ch.qos.logback:logback-classic")
-    implementation("com.fasterxml.jackson.core:jackson-core")
     compileOnly("org.projectlombok:lombok")
 }
 
